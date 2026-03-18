@@ -1,13 +1,3 @@
-# Header only libraire standard (HOL standard)
-
-## Description
-
-This libraire is part of the HOL project. It bring simple functions, macros and types for all sort of project in C/C++.
-
-## Code exemple
-
-``` C
-
 #define HOL_STANDARD_IMPLEMENTATION                     // To put in only one file (main.c for exemple).
                                                         // you can also define HOL_IMPLENTATION for all HOL libraire
 
@@ -53,18 +43,3 @@ i32 main(int argc, char** argv)                         // More explicit types (
         free(output);
         return 0;
 }
-
-```
-
-## Compilation
-
-You can just put the file in your project directory or if you have a unix like system run the build bash script.
-Note that not all the feature of the project are avalable on window or macos.
-
-``` bash
-./build
-```
-
-The project is stile young so you can try the test file 
-
-## Documention

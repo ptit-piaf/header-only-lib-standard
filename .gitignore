@@ -3,3 +3,5 @@
 !*.h
 !.gitignore
 !README.md
+!build
+!test/*.c
