@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-#define MAX(x, y) (x > y : x ? y)
-#define MIN(x, y) (x < y : x ? y)
-#define REPEAT(x, n) for(int _=0;x, _<n; _++);
-
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -20,6 +16,10 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
+#define MAX(x, y) (x > y : x ? y)
+#define MIN(x, y) (x < y : x ? y)
+#define REPEAT(x, n) for(u32 _=0;x, _<n; _++);
+
 typedef enum
 {
         HOLY_SUCCESS = 0,
@@ -27,6 +27,8 @@ typedef enum
         HOL_ALLOC_ERROR,
         HOL_AUTORIZATION_REQUIRED,
         HOL_CREATION_FAILED,
+        HOL_NULL_FILE_PATH,
+        HOL_FILE_NOT_FIND,
         HOL_ERROR_MAX = 0XFFFFFFFF  // 32 bits enum (use for error wich are not already define)
 } E_error;
 
@@ -45,6 +47,7 @@ typedef struct
 #define ANSI_CYAN_TEXT(x) "\e[0;36m" x "\e[0m"
 
 extern HOL_buffer HOL_readFile(const char* filePath);
+extern void HOL_closeFile(HOL_buffer file);
 
 #endif
 
@@ -95,6 +98,8 @@ HOL_buffer HOL_readFile(const char* filePath)
         close(fd);
         return buffer;
 }
+
+extern void HOL_closeFile(HOL_buffer file);
 
 #endif
 
