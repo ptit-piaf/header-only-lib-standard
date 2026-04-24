@@ -20,10 +20,12 @@ typedef double f64;
 #define MIN(x, y) (x < y : x ? y)
 #define REPEAT(x, n) for(u32 _=0;x, _<n; _++);
 
-#ifdef cglm_h
 #define ADD_VEC3(x, y) ((vec3){x[0]+y[0], x[1]+y[1], x[2]+y[2]})
 #define MUL_VEC3(x, y) ((vec3){x[0]*y[0], x[1]*y[1], x[2]*y[2]})
-#endif
+
+#define X 0
+#define Y 1
+#define Z 2
 
 typedef enum
 {
