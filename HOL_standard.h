@@ -27,6 +27,9 @@ typedef double f64;
 #define Y 1
 #define Z 2
 
+#define ADVANCEMENT_NULL        0
+#define ADVANCEMENT_COMPLETE    0xFFFFFFFF
+
 typedef enum
 {
         HOLY_SUCCESS = 0,
@@ -36,6 +39,9 @@ typedef enum
         HOL_CREATION_FAILED,
         HOL_NULL_FILE_PATH,
         HOL_FILE_NOT_FIND,
+        HOL_NOT_SUPPORTED,
+        HOL_NOT_VALID,
+        HOL_PARSING_FAILED,
         HOL_ERROR_MAX = 0XFFFFFFFF  // 32 bits enum (use for error wich are not already define)
 } E_error;
 
@@ -55,13 +61,17 @@ typedef struct
 
 extern HOL_buffer HOL_readFile(const char* filePath);
 extern void HOL_closeFile(HOL_buffer file);
+extern char* HOL_getDirPathFromFilePath(const char* filePath);
 
 #endif
 
 #if defined(HOL_STANDARD_IMPLEMENTATION) || defined(HOL_IMPLEMENTATION)
+#ifndef HOL_STANDARD_C
+#define HOL_STANDARD_C
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef __unix__ // no implementation for window for now
 
@@ -106,7 +116,41 @@ HOL_buffer HOL_readFile(const char* filePath)
         return buffer;
 }
 
-extern void HOL_closeFile(HOL_buffer file);
+char* HOL_getDirPathFromFilePath(const char* filePath)
+{
+        u32 dirPathSize = 0;
+
+        u32 filePathSize = strlen(filePath) + 1;
+        for(u32 i=0; i<filePathSize; i++)
+        {
+                switch(filePath[i])
+                {
+                        case '/':
+                                dirPathSize = i;
+                                break;
+                        case '\0':
+                                goto GO_QUIT_LOOP;
+                }
+        }
+
+GO_QUIT_LOOP:
+
+        if(!dirPathSize)
+                return NULL;
+
+        char* dirPath = malloc(dirPathSize+2);
+        memcpy(dirPath, filePath, dirPathSize+1);
+        dirPath[dirPathSize] = '\0';
+
+        return memcpy(dirPath, filePath, dirPathSize+1);
+}
+
+void HOL_closeFile(HOL_buffer file)
+{
+        free(file.buffer);
+}
+
+#endif
 
 #endif
 
