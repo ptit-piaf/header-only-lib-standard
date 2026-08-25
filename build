@@ -1,2 +1,4 @@
 #!/bin/bash
+sudo mkdir /usr/include/HOL
+sudo touch /usr/include/HOL/HOL_standard.h
 sudo cp -r ./HOL_standard.h /usr/include/HOL/HOL_standard.h
