@@ -41,6 +41,7 @@ typedef enum
         HOL_FILE_NOT_FIND,
         HOL_NOT_SUPPORTED,
         HOL_NOT_VALID,
+        HOL_INVALID_ARGUMENT,
         HOL_PARSING_FAILED,
         HOL_ERROR_MAX = 0XFFFFFFFF  // 32 bits enum (use for error wich are not already define)
 } E_error;
@@ -62,6 +63,7 @@ typedef struct
 extern HOL_buffer HOL_readFile(const char* filePath);
 extern void HOL_closeFile(HOL_buffer file);
 extern char* HOL_getDirPathFromFilePath(const char* filePath);
+extern E_error HOL_getUnixFilePathFromUri(const char* uri, char* filePathDst, u32 filePathDstLenght);
 
 #endif
 
@@ -148,6 +150,132 @@ GO_QUIT_LOOP:
 void HOL_closeFile(HOL_buffer file)
 {
         free(file.buffer);
+}
+
+extern E_error HOL_getUnixFilePathFromUri(const char* uri, char* filePathDst, u32 filePathDstLenght)
+{
+        u32 uriOffset = 0;
+
+        if(strlen(uri)+1 < 1 || strlen(uri)+1 != strlen(uri)+1 || filePathDstLenght<=1)
+                return HOL_INVALID_ARGUMENT;
+
+        if(strlen(uri)+1 >= sizeof("file:/"))
+        {
+                if(strncmp(uri, "file:/", sizeof("file:/")-1))
+                        goto GO_FOR_LOOP;
+
+                if(strlen(uri)+1 == sizeof("file:/"))
+                        return HOL_PARSING_FAILED;
+
+                uriOffset = sizeof("file:/")-2;
+
+                if(uri[uriOffset+1] != '/')
+                        goto GO_FOR_LOOP;
+
+                if(strlen(uri)+1 == sizeof("file://"))
+                        return HOL_PARSING_FAILED;
+
+                uriOffset++;
+                if(uri[sizeof("file://")-1] == '/')
+                {
+                        if(strlen(uri)+1 == sizeof("file:///"))
+                                return HOL_PARSING_FAILED;
+                        uriOffset++;
+                        goto GO_FOR_LOOP;
+                }
+
+                uriOffset++;
+                for(; uri[uriOffset] != '/'; uriOffset++)
+                        if(uri[uriOffset] == '\0')
+                                return HOL_PARSING_FAILED;
+
+                if(strlen(uri) == uriOffset+1)
+                        return HOL_PARSING_FAILED;
+
+                if(uriOffset == strlen(uri))
+                        return HOL_PARSING_FAILED;
+        }
+
+GO_FOR_LOOP:
+
+        for(u32 i=0;  i<filePathDstLenght && uri[uriOffset]!='\0';  uriOffset++, i++)
+        {
+                if(uri[uriOffset] == '%')
+                {
+                        if(uri[uriOffset+1] == 'a' ||
+                           uri[uriOffset+1] == 'b' ||
+                           uri[uriOffset+1] == 'c' ||
+                           uri[uriOffset+1] == 'd' ||
+                           uri[uriOffset+1] == 'e' ||
+                           uri[uriOffset+1] == 'f')
+                        {
+                                filePathDst[i] = (uri[uriOffset+1]-'a'+10) * 16;
+                        }
+                        else if(uri[uriOffset+1] == 'A' ||
+                                uri[uriOffset+1] == 'B' ||
+                                uri[uriOffset+1] == 'C' ||
+                                uri[uriOffset+1] == 'D' ||
+                                uri[uriOffset+1] == 'E' ||
+                                uri[uriOffset+1] == 'F')
+                        {
+                                filePathDst[i] = (uri[uriOffset+1]-'A'+10) * 16;
+                        }
+                        else if(uri[uriOffset+1] == '0' ||
+                                uri[uriOffset+1] == '1' ||
+                                uri[uriOffset+1] == '2' ||
+                                uri[uriOffset+1] == '3' ||
+                                uri[uriOffset+1] == '4' ||
+                                uri[uriOffset+1] == '5' ||
+                                uri[uriOffset+1] == '6' ||
+                                uri[uriOffset+1] == '7' ||
+                                uri[uriOffset+1] == '8' ||
+                                uri[uriOffset+1] == '9')
+                        {
+                                filePathDst[i] = (uri[uriOffset+1]-'0') * 16;
+                        }
+                        else
+                                return HOL_PARSING_FAILED;
+
+                        if(uri[uriOffset+2] == 'a' ||
+                           uri[uriOffset+2] == 'b' ||
+                           uri[uriOffset+2] == 'c' ||
+                           uri[uriOffset+2] == 'd' ||
+                           uri[uriOffset+2] == 'e' ||
+                           uri[uriOffset+2] == 'f')
+                        {
+                                filePathDst[i] += uri[uriOffset+2]-'a'+10;
+                        }
+                        else if(uri[uriOffset+2] == 'A' ||
+                                uri[uriOffset+2] == 'B' ||
+                                uri[uriOffset+2] == 'C' ||
+                                uri[uriOffset+2] == 'D' ||
+                                uri[uriOffset+2] == 'E' ||
+                                uri[uriOffset+2] == 'F')
+                        {
+                                filePathDst[i] += uri[uriOffset+2]-'A'+10;
+                        }
+                        else if(uri[uriOffset+2] == '0' ||
+                                uri[uriOffset+2] == '1' ||
+                                uri[uriOffset+2] == '2' ||
+                                uri[uriOffset+2] == '3' ||
+                                uri[uriOffset+2] == '4' ||
+                                uri[uriOffset+2] == '5' ||
+                                uri[uriOffset+2] == '6' ||
+                                uri[uriOffset+2] == '7' ||
+                                uri[uriOffset+2] == '8' ||
+                                uri[uriOffset+2] == '9')
+                        {
+                                filePathDst[i] += uri[uriOffset+2]-'0';
+                        }
+                        else
+                                return HOL_PARSING_FAILED;
+
+                        uriOffset += 2;
+                        continue;
+                }
+
+                filePathDst[i] = uri[uriOffset];
+        }
 }
 
 #endif
